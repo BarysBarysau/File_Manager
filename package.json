@@ -1,0 +1,20 @@
+{
+  "name": "file_manager",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BarysBarysau/File_Manager.git"
+  },
+  "author": "barysbarysau",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BarysBarysau/File_Manager/issues"
+  },
+  "homepage": "https://github.com/BarysBarysau/File_Manager#readme"
+}
