@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import * as readline from "node:readline";
 import { fileURLToPath } from "url";
+import { homedir } from "node:os";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -11,7 +12,12 @@ const arg = process.argv[2].split("=");
 
 if (arg.includes("--username")) {
   console.log(`Welcome to the File Manager, ${arg[1]}!`);
-  console.log(`You are currently in C:\\Users\\${arg[1]}`);
+  const usernamefolder = function () {
+    const array = homedir().split("\\");
+    array.splice(array.length - 1, 1, arg[1]);
+    return array.join("\\");
+  };
+  console.log(`You are currently in ${usernamefolder()}`);
 }
 
 const prompt = arg[1];
