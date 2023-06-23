@@ -10,13 +10,14 @@ const rl = readline.createInterface({
 
 const arg = process.argv[2].split("=");
 
+const usernamefolder = function () {
+  const array = homedir().split("\\");
+  array.splice(array.length - 1, 1, arg[1]);
+  return array.join("\\");
+};
+
 if (arg.includes("--username")) {
   console.log(`Welcome to the File Manager, ${arg[1]}!`);
-  const usernamefolder = function () {
-    const array = homedir().split("\\");
-    array.splice(array.length - 1, 1, arg[1]);
-    return array.join("\\");
-  };
   console.log(`You are currently in ${usernamefolder()}`);
 }
 
@@ -27,7 +28,7 @@ function ask(question) {
     if (answer === ".exit") {
       process.exit();
     }
-
+    console.log(`You are currently in ${usernamefolder()}`);
     ask(question);
   });
 }
