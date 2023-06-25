@@ -1,11 +1,11 @@
 import { parentPort } from "node:worker_threads";
-import { ChildProcess } from "node:child_process";
+import * as path from "node:path";
 
 parentPort.on("message", (value) => {
   async function newPath(oldPath) {
-    const array = oldPath.slice(0, -1).split("\\");
+    const array = oldPath.slice(0, -1).split(path.sep);
     array.splice(array.length - 1, 1);
-    return array.join("\\").concat("\\");
+    return array.join(path.sep).concat(path.sep);
   }
 
   async function sendResult() {
