@@ -97,6 +97,28 @@ async function ask(question) {
           workerOnFs.terminate();
           ask(question);
         });
+      } else if (answer.split(" ")[0] === "rn") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const newPathToFile = path.resolve(
+          __dirname,
+          `${answer.split(" ")[2]}`
+        );
+        const workerOnFs = new Worker("./operationfile.js");
+        workerOnFs.postMessage([
+          answer.split(" ")[0],
+          pathToFile,
+          newPathToFile,
+        ]);
+        workerOnFs.on("message", (value) => {
+          console.log(value);
+          workerOnFs.terminate();
+          ask(question);
+        });
+        workerOnFs.on("error", (err) => {
+          console.error(err, { message: "Operation failed" });
+          workerOnFs.terminate();
+          ask(question);
+        });
       } else {
         console.log("Invalid input");
         ask(question);
