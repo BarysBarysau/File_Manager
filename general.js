@@ -202,6 +202,48 @@ async function ask(question) {
           console.error(err, { message: "Operation failed" });
           ask(question);
         });
+      } else if (answer.split(" ")[0] === "compress") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const pathToCompress = path.resolve(
+          __dirname,
+          `${answer.split(" ")[2]}`
+        );
+        const workerOnCompress = new Worker("./compress.js");
+        workerOnCompress.postMessage([
+          answer.split(" ")[0],
+          pathToFile,
+          pathToCompress,
+        ]);
+        workerOnCompress.on("message", (value) => {
+          console.log(value);
+          workerOnCompress.terminate();
+          ask(question);
+        });
+        workerOnCompress.on("error", (err) => {
+          console.error(err, { message: "Operation failed" });
+          ask(question);
+        });
+      } else if (answer.split(" ")[0] === "decompress") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const pathToDecompress = path.resolve(
+          __dirname,
+          `${answer.split(" ")[2]}`
+        );
+        const workerOnCompress = new Worker("./compress.js");
+        workerOnCompress.postMessage([
+          answer.split(" ")[0],
+          pathToFile,
+          pathToDecompress,
+        ]);
+        workerOnCompress.on("message", (value) => {
+          console.log(value);
+          workerOnCompress.terminate();
+          ask(question);
+        });
+        workerOnCompress.on("error", (err) => {
+          console.error(err, { message: "Operation failed" });
+          ask(question);
+        });
       } else {
         console.log("Invalid input");
         ask(question);
