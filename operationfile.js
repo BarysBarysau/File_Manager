@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { finished } from "node:stream/promises";
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { rename, open } from "node:fs/promises";
+import { rename, open, unlink } from "node:fs/promises";
 
 parentPort.on("message", (value) => {
   switch (value[0]) {
@@ -31,6 +31,12 @@ parentPort.on("message", (value) => {
       );
       break;
     case "mv":
+      pipeline(createReadStream(value[1]), createWriteStream(value[2])).then(
+        () => {
+          parentPort.postMessage("File moved");
+          unlink(value[1]).then((f) => f);
+        }
+      );
       break;
     case "rm":
       break;

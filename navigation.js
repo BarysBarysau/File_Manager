@@ -43,5 +43,13 @@ parentPort.on("message", (value) => {
 
       sendResultLs();
       break;
+
+    case "cd":
+      opendir(`${value[1]}`).then((dir) =>
+        dir
+          .close()
+          .then(() => parentPort.postMessage("Directory has been changed"))
+      );
+      break;
   }
 });

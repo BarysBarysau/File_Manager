@@ -3,6 +3,7 @@ import * as readline from "node:readline";
 import { homedir } from "node:os";
 import { fileURLToPath } from "url";
 import { Worker } from "node:worker_threads";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -34,7 +35,7 @@ async function ask(question) {
       if (answer === ".exit") {
         process.exit();
       } else if (answer === "up") {
-        if (workingFolder !== `${process.env.SystemDrive}\\`) {
+        if (workingFolder !== `${process.env.SystemDrive.concat(path.sep)}`) {
           const workerOnNaw = new Worker("./navigation.js");
           workerOnNaw.postMessage([answer, workingFolder]);
           workerOnNaw.on("message", (value) => {
@@ -52,15 +53,26 @@ async function ask(question) {
           ask(question);
         }
       } else if (answer.split(" ")[0] === "cd") {
-        if (
-          answer.split(" ")[1].split("\\")[0] !== `${process.env.SystemDrive}`
-        ) {
-          console.log("Invalid input");
+        if (answer.split(" ")[1] === `${process.env.SystemDrive}`) {
+          console.log(
+            `You are currently in ${answer.split(" ")[1].concat(path.sep)}`
+          );
+          workingFolder = answer.split(" ")[1].concat(path.sep);
           ask(question);
         } else {
-          console.log(`You are currently in ${answer.split(" ")[1]}`);
-          workingFolder = answer.split(" ")[1];
-          ask(question);
+          const workerOnNaw = new Worker("./navigation.js");
+          workerOnNaw.postMessage([answer.split(" ")[0], answer.split(" ")[1]]);
+          workerOnNaw.on("message", (value) => {
+            console.log(value);
+            workerOnNaw.terminate();
+            console.log(`You are currently in ${answer.split(" ")[1]}`);
+            workingFolder = answer.split(" ")[1];
+            ask(question);
+          });
+          workerOnNaw.on("error", (error) => {
+            console.error(error, { message: "Operation failed" });
+            ask(question);
+          });
         }
       } else if (answer === "ls") {
         const pathToDirectory = path.resolve(__dirname, `${workingFolder}`);
@@ -123,6 +135,27 @@ async function ask(question) {
           ask(question);
         });
       } else if (answer.split(" ")[0] === "cp") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const newPathToFile = path.resolve(
+          __dirname,
+          `${answer.split(" ")[2]}`
+        );
+        const workerOnFs = new Worker("./operationfile.js");
+        workerOnFs.postMessage([
+          answer.split(" ")[0],
+          pathToFile,
+          newPathToFile,
+        ]);
+        workerOnFs.on("message", (value) => {
+          console.log(value);
+          workerOnFs.terminate();
+          ask(question);
+        });
+        workerOnFs.on("error", (err) => {
+          console.error(err, { message: "Operation failed" });
+          ask(question);
+        });
+      } else if (answer.split(" ")[0] === "mv") {
         const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
         const newPathToFile = path.resolve(
           __dirname,
