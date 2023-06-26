@@ -23,7 +23,7 @@ let workingFolder = usernamefolder();
 
 if (arg.includes("--username")) {
   console.log(`Welcome to the File Manager, ${arg[1]}!`);
-  console.log(`You are currently in ${usernamefolder()}`);
+  console.log(`You are currently in ${workingFolder}`);
 }
 
 const prompt = arg[1];
@@ -45,16 +45,23 @@ async function ask(question) {
           });
           workerOnNaw.on("error", (error) => {
             console.log(error);
-            workerOnNaw.terminate();
+            ask(question);
           });
         } else {
           console.log(`You are currently in ${workingFolder}`);
           ask(question);
         }
       } else if (answer.split(" ")[0] === "cd") {
-        console.log(`You are currently in ${answer.split(" ")[1]}`);
-        workingFolder = answer.split(" ")[1];
-        ask(question);
+        if (
+          answer.split(" ")[1].split("\\")[0] !== `${process.env.SystemDrive}`
+        ) {
+          console.log("Invalid input");
+          ask(question);
+        } else {
+          console.log(`You are currently in ${answer.split(" ")[1]}`);
+          workingFolder = answer.split(" ")[1];
+          ask(question);
+        }
       } else if (answer === "ls") {
         const pathToDirectory = path.resolve(__dirname, `${workingFolder}`);
         const workerOnLs = new Worker("./navigation.js");
@@ -66,7 +73,6 @@ async function ask(question) {
         });
         workerOnLs.on("error", (error) => {
           console.error(error, { message: "Operation failed" });
-          workerOnLs.terminate();
           ask(question);
         });
       } else if (answer.split(" ")[0] === "cat") {
@@ -80,7 +86,6 @@ async function ask(question) {
         });
         workerOnFs.on("error", (error) => {
           console.error(error, { message: "Operation failed" });
-          workerOnFs.terminate();
           ask(question);
         });
       } else if (answer.split(" ")[0] === "add") {
@@ -94,7 +99,6 @@ async function ask(question) {
         });
         workerOnFs.on("error", (err) => {
           console.error(err, { message: "Operation failed" });
-          workerOnFs.terminate();
           ask(question);
         });
       } else if (answer.split(" ")[0] === "rn") {
@@ -116,7 +120,27 @@ async function ask(question) {
         });
         workerOnFs.on("error", (err) => {
           console.error(err, { message: "Operation failed" });
+          ask(question);
+        });
+      } else if (answer.split(" ")[0] === "cp") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const newPathToFile = path.resolve(
+          __dirname,
+          `${answer.split(" ")[2]}`
+        );
+        const workerOnFs = new Worker("./operationfile.js");
+        workerOnFs.postMessage([
+          answer.split(" ")[0],
+          pathToFile,
+          newPathToFile,
+        ]);
+        workerOnFs.on("message", (value) => {
+          console.log(value);
           workerOnFs.terminate();
+          ask(question);
+        });
+        workerOnFs.on("error", (err) => {
+          console.error(err, { message: "Operation failed" });
           ask(question);
         });
       } else {

@@ -1,7 +1,8 @@
 import { parentPort } from "node:worker_threads";
 import * as path from "node:path";
 import { finished } from "node:stream/promises";
-import { createReadStream, openSync, closeSync } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
 import { rename, open } from "node:fs/promises";
 
 parentPort.on("message", (value) => {
@@ -25,6 +26,9 @@ parentPort.on("message", (value) => {
       );
       break;
     case "cp":
+      pipeline(createReadStream(value[1]), createWriteStream(value[2])).then(
+        () => parentPort.postMessage("File copyed")
+      );
       break;
     case "mv":
       break;

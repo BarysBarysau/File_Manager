@@ -19,27 +19,24 @@ parentPort.on("message", (value) => {
     case "ls":
       const list = async (path) => {
         let array = [];
-        try {
-          const dir = await opendir(path);
-          for await (const dirent of dir) {
-            if (dirent.isFile()) {
-              array.push({ Name: dirent.name, Type: "file" });
-            } else if (dirent.isDirectory()) {
-              array.push({ Name: dirent.name, Type: "directory" });
-            }
+        const dir = await opendir(path);
+        for await (const dirent of dir) {
+          if (dirent.isFile()) {
+            array.push({ Name: dirent.name, Type: "file" });
+          } else if (dirent.isDirectory()) {
+            array.push({ Name: dirent.name, Type: "directory" });
           }
-          return array.sort((a, b) => {
-            if ((a.Type === "file", b.Type === "directory")) {
-              return 1;
-            } else if ((a.Type === "directory", b.Type === "file")) {
-              return -1;
-            }
-            return 0;
-          });
-        } catch (err) {
-          throw err;
         }
+        return array.sort((a, b) => {
+          if ((a.Type === "file", b.Type === "directory")) {
+            return 1;
+          } else if ((a.Type === "directory", b.Type === "file")) {
+            return -1;
+          }
+          return 0;
+        });
       };
+
       async function sendResultLs() {
         parentPort.postMessage(await list(value[1]));
       }
