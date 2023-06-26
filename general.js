@@ -189,6 +189,19 @@ async function ask(question) {
           console.error(err, { message: "Operation failed" });
           ask(question);
         });
+      } else if (answer.split(" ")[0] === "hash") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const workerOnHash = new Worker("./hash.js");
+        workerOnHash.postMessage(pathToFile);
+        workerOnHash.on("message", (value) => {
+          console.log(value);
+          workerOnHash.terminate();
+          ask(question);
+        });
+        workerOnHash.on("error", (err) => {
+          console.error(err, { message: "Operation failed" });
+          ask(question);
+        });
       } else {
         console.log("Invalid input");
         ask(question);
