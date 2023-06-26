@@ -39,6 +39,7 @@ parentPort.on("message", (value) => {
       );
       break;
     case "rm":
+      unlink(value[1]).then(() => parentPort.postMessage("File deleted"));
       break;
   }
 });
