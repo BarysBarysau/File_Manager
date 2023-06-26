@@ -35,13 +35,17 @@ async function ask(question) {
         process.exit();
       } else if (answer === "up") {
         if (workingFolder !== `${process.env.SystemDrive}\\`) {
-          const workerOnUp = new Worker("./navigation.js");
-          workerOnUp.postMessage(workingFolder);
-          workerOnUp.on("message", (value) => {
+          const workerOnNaw = new Worker("./navigation.js");
+          workerOnNaw.postMessage([answer, workingFolder]);
+          workerOnNaw.on("message", (value) => {
             workingFolder = value;
-            workerOnUp.terminate();
+            workerOnNaw.terminate();
             console.log(`You are currently in ${value}`);
             ask(question);
+          });
+          workerOnNaw.on("error", (error) => {
+            console.log(error);
+            workerOnNaw.terminate();
           });
         } else {
           console.log(`You are currently in ${workingFolder}`);
@@ -52,16 +56,35 @@ async function ask(question) {
         workingFolder = answer.split(" ")[1];
         ask(question);
       } else if (answer === "ls") {
-        const pathToDirectory = path.relative(__dirname, `${workingFolder}`);
-        const workerOnLs = new Worker("./operationfail.js");
-        workerOnLs.postMessage(pathToDirectory);
+        const pathToDirectory = path.resolve(__dirname, `${workingFolder}`);
+        const workerOnLs = new Worker("./navigation.js");
+        workerOnLs.postMessage([answer, pathToDirectory]);
         workerOnLs.on("message", (value) => {
-          workerOnLs.terminate();
           console.table(value);
+          workerOnLs.terminate();
+          ask(question);
+        });
+        workerOnLs.on("error", (error) => {
+          console.error(error, { message: "Operation failed" });
+          workerOnLs.terminate();
+          ask(question);
+        });
+      } else if (answer.split(" ")[0] === "cat") {
+        const pathToFile = path.resolve(__dirname, `${answer.split(" ")[1]}`);
+        const workerOnFs = new Worker("./operationfile.js");
+        workerOnFs.postMessage([answer.split(" ")[0], pathToFile]);
+        workerOnFs.on("message", (value) => {
+          process.stdout.write(value);
+          workerOnFs.terminate();
+          ask(question);
+        });
+        workerOnFs.on("error", (error) => {
+          console.error(error, { message: "Operation failed" });
+          workerOnFs.terminate();
           ask(question);
         });
       } else {
-        console.log(`You are currently in ${workingFolder}`);
+        console.log("Invalid input");
         ask(question);
       }
     });
