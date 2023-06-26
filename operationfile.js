@@ -1,8 +1,7 @@
 import { parentPort } from "node:worker_threads";
-import { opendir } from "node:fs/promises";
 import * as path from "node:path";
 import { finished } from "node:stream/promises";
-import { createReadStream } from "node:fs";
+import { createReadStream, openSync, closeSync } from "node:fs";
 
 parentPort.on("message", (value) => {
   switch (value[0]) {
@@ -17,6 +16,12 @@ parentPort.on("message", (value) => {
       read();
       break;
     case "add":
+      const create = () => {
+        const fd = openSync(value[1], "wx");
+        parentPort.postMessage("File created");
+        closeSync(fd);
+      };
+      create();
       break;
     case "rn":
       break;
